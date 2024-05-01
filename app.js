@@ -14,22 +14,69 @@ app.get('/', (req, res) => {
 
 const db = new Map();
 let key_id = 1;
-// youtuber 전체 조회
+// 유튜버 전체 조회
 app.get('/youtubers', (req, res) => {
     let youtubersObj = {};
     res.json(Array.from(db.values()));
     console.log(db);
 });
-//youtuber 개별(id) 조회
+//유튜버 개별(id) 조회
 app.get('/youtubers/:id', (req, res) => {
-    const id = parseInt(req.params.id);
-    res.json(db.get(id));
+    const reqId = parseInt(req.params.id);
+    const channelObj = db.get(reqId);
+    if(channelObj === undefined) {
+        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
+    } else {
+        res.json(channelObj);
+    }
 });
-// youtuber 등록
+// 유튜버 등록
 app.post('/youtubers',(req, res) => {
     db.set(key_id++, req.body);
     res.json({ message: `${req.body.channelName}님, 유튜버 생활을 응원합니다!`});
-    // res.send(req.body.channelName+'님, 유튜버 생활을 응원합니다!'); // .channelName, '님, 유튜버 생활을 응원합니다!'
+});
+// 유튜버 전체 삭제
+app.delete('/youtubers', (req, res) => {
+    let msg = "";
+    if(!db.size) {
+        msg = "삭제할 채널이 존재하지 않습니다.";
+    } else {
+        db.clear();
+        msg = "모든 채널이 삭제되었습니다.";
+    }
+    res.json({ message: msg });
+});
+// 유튜버 개별(id) 삭제
+app.delete('/youtubers/:id', (req, res) => {
+    const reqId = parseInt(req.params.id);
+    const channelObj = db.get(reqId);
+    if(channelObj === undefined) {
+        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
+    } else {
+        const channelName = channelObj.channelName;
+        db.delete(reqId);
+        
+        res.json({ message: `${channelName} 채널이 삭제되었습니다.` });
+    }
+});
+// 유튜버 개별(id) 수정
+app.put('/youtubers/:id', (req, res) => {
+    const reqId = parseInt(req.params.id);
+    const newChannelName = req.body.channelName;
+    let msg = "";
+    if(db.get(reqId) === undefined) {
+        msg = `요청하신 ${reqId}번은 없는 채널입니다.`;
+    } else if(newChannelName === "") {
+        msg = "채널명을 입력해주세요.";
+    } else {
+        const channelObj = db.get(reqId);
+        const prevChannelName = channelObj.channelName;
+        channelObj.channelName = newChannelName;
+        db.set(reqId, channelObj);
+        res.json(channelObj);
+        msg = `채널명이 ${prevChannelName}에서 ${newChannelName}으로 변경되었습니다.`;
+    }
+    res.json({ message: msg });
 });
 
 app.use((req, res, next) => {
