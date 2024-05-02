@@ -27,13 +27,20 @@ app.get('/youtubers/:id', (req, res) => {
     if(channelObj) {
         res.json(channelObj);
     } else {
-        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
+        res.status(404).json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
     }
 });
 // 유튜버 등록
 app.post('/youtubers',(req, res) => {
-    db.set(key_id++, req.body);
-    res.json({ message: `${req.body.channelName}님, 유튜버 생활을 응원합니다!`});
+    const channelName = req.body.channelName; 
+    if(channelName) {
+        db.set(key_id++, req.body);
+
+        res.json({ message: `${channelName}님, 유튜버 생활을 응원합니다!`});
+    } else {
+        res.status(400).json({ message: "잘못된 요청입니다."});
+    }
+    
 });
 // 유튜버 전체 삭제
 app.delete('/youtubers', (req, res) => {
@@ -56,7 +63,7 @@ app.delete('/youtubers/:id', (req, res) => {
         
         res.json({ message: `${channelName} 채널이 삭제되었습니다.` });
     } else {
-        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
+        res.status(404).json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
     }
 });
 // 유튜버 개별(id) 수정
