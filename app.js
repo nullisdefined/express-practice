@@ -24,10 +24,10 @@ app.get('/youtubers', (req, res) => {
 app.get('/youtubers/:id', (req, res) => {
     const reqId = parseInt(req.params.id);
     const channelObj = db.get(reqId);
-    if(channelObj === undefined) {
-        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
-    } else {
+    if(channelObj) {
         res.json(channelObj);
+    } else {
+        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
     }
 });
 // 유튜버 등록
@@ -38,11 +38,11 @@ app.post('/youtubers',(req, res) => {
 // 유튜버 전체 삭제
 app.delete('/youtubers', (req, res) => {
     let msg = "";
-    if(!db.size) {
-        msg = "삭제할 채널이 존재하지 않습니다.";
-    } else {
+    if(db.size) {
         db.clear();
         msg = "모든 채널이 삭제되었습니다.";
+    } else {
+        msg = "삭제할 채널이 존재하지 않습니다.";
     }
     res.json({ message: msg });
 });
@@ -50,13 +50,13 @@ app.delete('/youtubers', (req, res) => {
 app.delete('/youtubers/:id', (req, res) => {
     const reqId = parseInt(req.params.id);
     const channelObj = db.get(reqId);
-    if(channelObj === undefined) {
-        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
-    } else {
+    if(channelObj) {
         const channelName = channelObj.channelName;
         db.delete(reqId);
         
         res.json({ message: `${channelName} 채널이 삭제되었습니다.` });
+    } else {
+        res.json({ message: `요청하신 ${reqId}번은 없는 채널입니다.`});
     }
 });
 // 유튜버 개별(id) 수정
